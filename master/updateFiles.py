@@ -3,19 +3,28 @@ import re
 import xml.etree.ElementTree as ET
 import base64
 import sys
+import copy
+import uuid
 
-def ParseConfigFiles(configs):
+def ParseConfigFiles(configAll):
+  #parse masterConfig
+  configAll["groupConfigs"] = {}
+  tree = ET.parse("masterConfig_Groups.pro6")
+  groups = tree.find("array[@rvXMLIvarName='groups']")
+  for group in groups:
+    groupOut = {}
+    groupOut["color"] = group.get("color")
+    groupOut["hotKey"] = group[0][0].get("hotKey")
+    configAll["groupConfigs"][group.get("name")] = groupOut
   #loop over all config files in the subfolders
+  configAll["fileConfigs"] = []
   for file in  glob.glob("../**/config_*.pro6", recursive = True):
     configDict = {}
     #save path
-    configDict["path"] = file
+    configDict["path"] = file.rsplit("\\", 1)[0]
     #save style name
     configDict["styleName"] = re.search('config_(.*).pro6', file).group(1)
     #read config file
-    f = open(file, "r")
-    configInput = f.read()
-    f.close()
     tree = ET.parse(file)
     #get needed elements
     rvPresentationDocument = tree.getroot()
@@ -34,6 +43,9 @@ def ParseConfigFiles(configs):
       captionStyle = base64.standard_b64decode(rtfDataText.text).split(b'strokec0 ')[0] + b'strokec0 '
     lowerShapeElement = displayElements.find("RVShapeElement[@displayName='BottomLineShapeElement']")
     upperShapeElement = displayElements.find("RVShapeElement[@displayName='TopLineShapeElement']")
+    arrangements = rvPresentationDocument.find("array[@rvXMLIvarName='arrangements']")
+    arrangement = arrangements[0]
+    arrangementNSString = arrangement[0][0]
     #remove not needed elements
     displayElements.remove(textElement)
     if captionElement:
@@ -44,6 +56,8 @@ def ParseConfigFiles(configs):
       displayElements.remove(upperShapeElement)
     slides.remove(slide)
     groups.remove(group)
+    arrangements.remove(arrangement)
+    arrangement[0].remove(arrangementNSString)
     #add elements to configDict
     configDict["rvPresentationDocument"] = rvPresentationDocument
     configDict["group"] = group
@@ -54,18 +68,19 @@ def ParseConfigFiles(configs):
     configDict["captionStyle"] = captionStyle
     configDict["lowerShapeElement"] = lowerShapeElement
     configDict["upperShapeElement"] = upperShapeElement
+    configDict["arrangement"] = arrangement
+    configDict["arrangementNSString"] = arrangementNSString
     #append current config to config list
-    configs.append(configDict)
+    configAll["fileConfigs"].append(configDict)
 
 def ParseSlide(input, position, output, startingLine):
-  #TODO check for special characters and replace them
   slide = []
   #slide has atleast one line so it can be added directly
-  slide.append(input[position])
+  slide.append(input[position].strip())
   lines = 1
   #if slide has two lines add second line
   if position + lines < len(input) and input[position + lines] != "":
-    slide.append(input[position + lines])
+    slide.append(input[position + lines].strip())
     lines += 1
   #check for empty line after slide
   if position + lines < len(input) and input[position + lines] != "":
@@ -73,42 +88,40 @@ def ParseSlide(input, position, output, startingLine):
   output.append(slide)
   return position + lines + 1
 
-def ParseGroup(input, position, output, allowedGroups, startingLine):
-  outputGroup = {}
+def ParseGroup(input, position, output, groupConfig, startingLine):
   #check if group name is as required
-  if input[position] not in allowedGroups:
+  if input[position] not in groupConfig:
      raise Exception("UnknownGroupError | line: {0}".format(startingLine), "The group '{0}' was not found.".format(input[position]))
   else:
-    outputGroup["name"] = input[position]
+    name = input[position]
+    output[name] = []
     #check empty line after group name
     if input[position + 1] != "":
        raise Exception("EmptyLineError | line: {0}".format(startingLine + 1), "An empty line was expected after group '{0}' but not found.".format(outputGroup["name"]))
     else:
-      outputGroup["slides"] = []
       i = position + 2
       #loop over all slides until next group is found
       while i < len(input):
-        if input[i] in allowedGroups:
+        if input[i] in groupConfig:
           break
-        i = ParseSlide(input, i, outputGroup["slides"], startingLine + i - position)
-      output.append(outputGroup)
+        i = ParseSlide(input, i, output[name], startingLine + i - position)
   return i
 
-def ParseLanguage(input, allowedGroups, startingLine):
+def ParseLanguage(input, groupConfig, startingLine):
   language = {}
   input = input.split("\n")
   language["name"] = input[0]
-  language["groups"] = []
+  language["groups"] = {}
   #check for empty line after language name
   if input[1] != "":
     raise Exception("EmptyLineError | line: {0}".format(startingLine + 1), "An empty line was expected after language '{0}' but not found.".format(language["name"]))
   i = 2
   #loop over all input data and parse groups
   while i < len(input):
-   i = ParseGroup(input, i, language["groups"], allowedGroups, startingLine + i)
+   i = ParseGroup(input, i, language["groups"], groupConfig, startingLine + i)
   return language
 
-def ParseArrangement(input, position, output, allowedGroups, startingLine):
+def ParseArrangement(input, position, output, groupConfig, startingLine):
   arrangement = {}
   arrangement["name"] = input[position]
   #check for empty line after arrangement name
@@ -119,7 +132,7 @@ def ParseArrangement(input, position, output, allowedGroups, startingLine):
     arrangement["order"] = []
     #loop over all groups in arrangement, verify they are as required and add them to the arrangement
     while i < len(input) and input[i] != "":
-      if input[i] not in allowedGroups:
+      if input[i] not in groupConfig:
         raise Exception("UnknownGroupError | line: {0}".format(startingLine + i - position), "The group '{0}' was not found.".format(input[i]))
       else:
         arrangement["order"].append(input[i])
@@ -127,7 +140,7 @@ def ParseArrangement(input, position, output, allowedGroups, startingLine):
     output.append(arrangement)
   return i + 1
 
-def ParseArrangements(input, allowedGroups, startingLine):
+def ParseArrangements(input, groupConfig, startingLine):
   splitInput = input.split("\n")
   if splitInput[0] != "Arrangements":
     raise Exception("KeyWordError | line: {0}".format(startingLine), "The KeyWord 'Arrangements' was expected but not found.")
@@ -137,37 +150,211 @@ def ParseArrangements(input, allowedGroups, startingLine):
     i = 2
     arragements = []
     while i < len(splitInput):
-      i = ParseArrangement(splitInput, i, arragements, allowedGroups, startingLine + i)
+      i = ParseArrangement(splitInput, i, arragements, groupConfig, startingLine + i)
   return arragements
 
-def ParseTextFile(file):
-  allowedGroups = ["Verse 1", "Verse 2", "Verse 3", "Verse 4", "Verse 5", "Verse 6", "Verse 7", "Verse 8", "Verse 9", "Chorus 1", "Chorus 2", "Chorus 3", "Chorus 4", "Chorus 5", "Chorus 6", "Chorus 7", "Chorus 8", "Chorus 9", "Bridge 1", "Bridge 2", "Bridge 3", "Bridge 4", "Bridge 5", "Bridge 6", "Bridge 7", "Bridge 8", "Bridge 9", "Tag 1", "Tag 2", "Tag 3", "Tag 4", "Tag 5", "Tag 6", "Tag 7", "Tag 8", "Tag 9", "Postchorus 1", "Postchorus 2", "Postchorus 3", "Postchorus 4", "Postchorus 5", "Postchorus 6", "Postchorus 7", "Postchorus 8", "Postchorus 9", "Prechorus 1", "Prechorus 2", "Prechorus 3", "Prechorus 4", "Prechorus 5", "Prechorus 6", "Prechorus 7", "Prechorus 8", "Prechorus 9"]
+def CheckOutput(output):
+  #if two languages check all groups have same number of slides and lines per slide
+  if len(output["languages"]) == 2:
+    #check if both languages have same number of groups
+    if len(output["languages"][0]["groups"]) != len(output["languages"][1]["groups"]):
+      raise Exception("GroupError | Number of Groups", "The language '{0}' has '{1}' groups but language '{2}' has '{3}'".format(output["languages"][0]["name"], len(output["languages"][0]["groups"]), output["languages"][1]["name"], len(output["languages"][1]["groups"])))
+    #check if all groups are in both languages
+    for group in output["languages"][0]["groups"]:
+      if group not in output["languages"][1]["groups"]:
+        raise Exception("GroupError | group: {0}".format(group), "The group '{0}' was found in language '{1}' but not in '{2}'".format(group, output["languages"][0]["name"], output["languages"][1]["name"]))
+    #check if all groups have same number of slides and lines per slide
+    for group in output["languages"][0]["groups"]:
+      if len(output["languages"][0]["groups"][group]) != len(output["languages"][1]["groups"][group]):
+        raise Exception("GroupError | group: {0}".format(group), "The group '{0}' has '{1}' slides in language '{2}' but '{3}' slides in language '{4}'".format(group, len(output["languages"][0]["groups"][group]), output["languages"][0]["name"], len(output["languages"][1]["groups"][group]), output["languages"][1]["name"]))
+      for i in range(0, len(output["languages"][0]["groups"][group])):
+        if len(output["languages"][0]["groups"][group][i]) != len(output["languages"][1]["groups"][group][i]):
+          raise Exception("SlideError | group: {0}".format(group), "Slide number '{0}' in group '{1}' has '{2}' lines in language '{3}' but '{4}' lines in language '{5}'".format(i, group, len(output["languages"][0]["groups"][group][i]), output["languages"][0]["name"], len(output["languages"][1]["groups"][group][i]), output["languages"][1]["name"]))
+    #check if arangements only consist of available groups
+    for arrangement in output["arrangements"]:
+      for group in arrangement["order"]:
+        if group not in output["languages"][0]["groups"] and group != "Instrumental":
+          raise Exception("ArrangementError | arrangement: {0}".format(arrangement["name"]), "The group '{0}' used in arrangement '{1}' was not found".format(group, arrangement["name"]))
+
+def ParseTextFile(file, groupConfig):
   #read input file
   f = open(file, "r")
   originalInput = f.read()
   f.close()
   output = {}
+  output["name"] = file.rstrip(".txt")
   output["languages"] = []
   #remove trailing newlines
   originalInput = originalInput.rstrip("\n")
   #split file into segments. One for each language and one for the arragements
   input = originalInput.split("\n\n\n")
   #parse first language
-  output["languages"].append(ParseLanguage(input[0], allowedGroups, 1))
+  output["languages"].append(ParseLanguage(input[0], groupConfig, 1))
   #parse second language if available
   if len(input) == 3:
     pos = originalInput.find(input[1])
     line = originalInput.count("\n", 0, pos) + 1
-    output["languages"].append(ParseLanguage(input[1], allowedGroups, line))
-  #TODO check that both languages have same number of lines per slides
+    output["languages"].append(ParseLanguage(input[1], groupConfig, line))
   #parse backing tracks
   pos = originalInput.find(input[-1])
   line = originalInput.count("\n", 0, pos) + 1
-  output["arrangements"] = ParseArrangements(input[-1], allowedGroups, line)
+  output["arrangements"] = ParseArrangements(input[-1], groupConfig, line)
+  CheckOutput(output)
   return output
 
-def CreateOutput(config, inputText):
-  
+def ReplaceSpecialCharacters(text):
+  for i in range(0, len(text)):
+    #Ä
+    text[i] = text[i].replace(chr(195) + chr(8222), "\\'C4")
+    #Ö
+    text[i] = text[i].replace(chr(195) + chr(8211), "\\'D6")
+    #Ü
+    text[i] = text[i].replace(chr(195) + chr(339), "\\'DC")
+    #ä
+    text[i] = text[i].replace(chr(195) + chr(164), "\\'E4")
+    #ö
+    text[i] = text[i].replace(chr(195) + chr(182), "\\'F6")
+    #ü
+    text[i] = text[i].replace(chr(195) + chr(188), "\\'FC")
+    #ß
+    text[i] = text[i].replace(chr(195) + chr(376), "\\'DF")
+    #’
+    text[i] = text[i].replace(chr(226) + chr(8364) + chr(8482), "\\'27")
+
+def CreateSlide(config, group, text, caption):
+  slide = copy.deepcopy(config["slide"])
+  #add notes
+  notes = text[0]
+  if len(text) == 2:
+    notes += "\n" + text[1]
+  slide.set("notes", notes)
+  displayElements = slide.find("array[@rvXMLIvarName='displayElements']")
+  #create textElement
+  textElement = copy.deepcopy(config["textElement"])
+  #replace special characters
+  ReplaceSpecialCharacters(text)
+  #update RTFData
+  inputText = config["textStyle"] + str.encode(text[0])
+  if len(text) == 2:
+    inputText += b'\\\n' + str.encode(text[1])
+  inputText += b'}'
+  rtfData =  base64.standard_b64encode(inputText)
+  nsString = textElement.find("NSString[@rvXMLIvarName='RTFData']")
+  nsString.text = rtfData.decode()
+  displayElements.append(textElement)
+  #create captionElement
+  if config["captionElement"] != None and caption != None:
+    captionElement = copy.deepcopy(config["captionElement"])
+    #replace special characters
+    ReplaceSpecialCharacters(caption)
+    #updateRTFData
+    inputText = config["captionStyle"] + str.encode(caption[0])
+    if len(caption) == 2:
+      inputText += b'\\\n' + str.encode(caption[1])
+    inputText += b'}'
+    rtfData =  base64.standard_b64encode(inputText)
+    nsString = captionElement.find("NSString[@rvXMLIvarName='RTFData']")
+    nsString.text = rtfData.decode()
+    displayElements.append(captionElement)
+  #create lowerShapeElement
+  if config["lowerShapeElement"] != None:
+    lowerShapeElement = copy.deepcopy(config["lowerShapeElement"])
+    displayElements.append(lowerShapeElement)
+  #create upperShapeElement
+  if config["upperShapeElement"] != None and len(text) == 2:
+    upperShapeElement = copy.deepcopy(config["upperShapeElement"])
+    displayElements.append(upperShapeElement)
+  slides = group.find("array[@rvXMLIvarName='slides']")
+  slides.append(slide)
+
+def CreateGroup(config, groupConfig, output, name, language, caption):
+  group = copy.deepcopy(config["group"])
+  #set name
+  group.set("name", name)
+  #set uuid
+  groupUuid = str(uuid.uuid4())
+  group.set("uuid", groupUuid)
+  #set group color
+  group.set("color", groupConfig[name]["color"])
+  #add slides to group
+  for i in range(0, len(language)):
+    if caption == None:
+      captionText = None
+    else:
+      captionText = caption[i]
+    CreateSlide(config, group, language[i], captionText)
+  #set group hotKey
+  firstSlide = group.find("array[@rvXMLIvarName='slides']")[0]
+  firstSlide.set("hotKey", groupConfig[name]["hotKey"])
+  #add group to array
+  groups = output.find("array[@rvXMLIvarName='groups']")
+  groups.append(group)
+  return groupUuid
+
+def CreateInstrumental(config, groupConfig, output):
+  instrumental = copy.deepcopy(config["group"])
+  #set name
+  instrumental.set("name", "Instrumental")
+  #set uuid
+  groupUuid = str(uuid.uuid4())
+  instrumental.set("uuid", groupUuid)
+  #set group color
+  instrumental.set("color", groupConfig["Instrumental"]["color"])
+  #add empty slide
+  slide = copy.deepcopy(config["slide"])
+  slide.set("notes", "")
+  slides = instrumental.find("array[@rvXMLIvarName='slides']")
+  slides.append(slide)
+  #set instrumental hotKey
+  firstSlide = instrumental.find("array[@rvXMLIvarName='slides']")[0]
+  firstSlide.set("hotKey", groupConfig["Instrumental"]["hotKey"])
+  #add instrumental to array
+  groups = output.find("array[@rvXMLIvarName='groups']")
+  groups.append(instrumental)
+  return groupUuid
+
+def CreateArrangements(output, arrangements, uuids):
+  arrangementsOutput = output.find("array[@rvXMLIvarName='arrangements']")
+  for arrangement in arrangements:
+    arrangementOutput = copy.deepcopy(config["arrangement"])
+    arrangementOutput.set("name", arrangement["name"])
+    groupIds = arrangementOutput.find("array[@rvXMLIvarName='groupIDs']")
+    for group in arrangement["order"]:
+      nsString = copy.deepcopy(config["arrangementNSString"])
+      nsString.text = uuids[group]
+      groupIds.append(nsString)
+    arrangementsOutput.append(arrangementOutput)
+
+def CreateOutput(config, groupConfig, name, language, caption, arrangements):
+  output = copy.deepcopy(config["rvPresentationDocument"])
+  #add title
+  output.set("CCLISongTitle", "{0}_{1}_{2}".format(name, language["name"], config["styleName"]))
+  uuids = {}
+  #create groups
+  for group in language["groups"]:
+    if caption == None:
+      captionGroup = None
+    else:
+      captionGroup = caption["groups"][group]
+    uuids[group] = CreateGroup(config, groupConfig, output, group, language["groups"][group], captionGroup)
+  #create Instrumental
+  uuids["Instrumental"] = CreateInstrumental(config, groupConfig, output)
+  #create arrangements
+  CreateArrangements(output, arrangements, uuids)
+  #write output to file
+  file = "{0}\\{1}_{2}_{3}.pro6".format(config["path"], name, language["name"], config["styleName"])
+  f = open(file , "w")
+  f.write(str(ET.tostring(output, "unicode")))
+  f.close()
+
+def CreateOutputs(config, groupConfig, inputText):
+  #check if two languages are provided
+  if len(inputText["languages"]) == 2:
+    CreateOutput(config, groupConfig, inputText["name"], inputText["languages"][0], inputText["languages"][1], inputText["arrangements"])
+    CreateOutput(config, groupConfig, inputText["name"], inputText["languages"][1], inputText["languages"][0], inputText["arrangements"])
+  else:
+    CreateOutput(config, groupConfig, inputText["name"], inputText["languages"][0], None, inputText["arrangements"])
+
 
 
 
@@ -196,17 +383,22 @@ def tempPrintConfig(configs):
   f.close()
 
 #main
-configs = []
-ParseConfigFiles(configs)
+configAll = {}
+#TODO add try and errors in parsing
+try:
+  ParseConfigFiles(configAll)
+except Exception as inst:
+  errorName, errorText = inst.args
+  print("| {0} | {2} |".format(errorName, errorText))
 #tempPrintConfig(configs)
 #loop over all files in master
 for file in  glob.glob("*.txt", recursive = False):
   try:
-    inputText = ParseTextFile(file)
+    inputText = ParseTextFile(file,  configAll["groupConfigs"])
+    #loop over configs and create output
+    for config in configAll["fileConfigs"]:
+      CreateOutputs(config, configAll["groupConfigs"], inputText)
   except Exception as inst:
     errorName, errorText = inst.args
     print("| {0} | file: {1} | {2} |".format(errorName, file, errorText))
-  #loop over configs and create output
-  for config in configs:
-    CreateOutput(config, inputText)
 
