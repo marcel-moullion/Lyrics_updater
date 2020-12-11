@@ -355,33 +355,6 @@ def CreateOutputs(config, groupConfig, inputText):
   else:
     CreateOutput(config, groupConfig, inputText["name"], inputText["languages"][0], None, inputText["arrangements"])
 
-
-
-
-
-
-
-
-def tempPrintConfig(configs):
-  f = open("debug.txt", "w")
-  for config in configs:
-    f.write(config["path"] + "\n")
-    f.write(config["styleName"] + "\n")
-    f.write(str(ET.tostring(config["rvPresentationDocument"])) + "\n")
-    f.write(str(ET.tostring(config["group"])) + "\n")
-    f.write(str(ET.tostring(config["slide"])) + "\n")
-    f.write(str(ET.tostring(config["textElement"])) + "\n")
-    f.write(str(config["textStyle"]) + "\n")
-    if config["captionElement"]:
-      f.write(str(ET.tostring(config["captionElement"])) + "\n")
-    if config["captionStyle"]:
-      f.write(str(config["captionStyle"]) + "\n")
-    if config["lowerShapeElement"]:
-      f.write(str(ET.tostring(config["lowerShapeElement"])) + "\n")
-    if config["upperShapeElement"]:
-      f.write(str(ET.tostring(config["upperShapeElement"])) + "\n")
-  f.close()
-
 #main
 configAll = {}
 #TODO add try and errors in parsing
