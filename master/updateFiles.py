@@ -1,3 +1,4 @@
+# -*- coding: iso-8859-1 -*-
 import glob
 import re
 import xml.etree.ElementTree as ET
@@ -92,6 +93,8 @@ def ParseGroup(input, position, output, groupConfig, startingLine):
   #check if group name is as required
   if input[position] not in groupConfig:
      raise Exception("UnknownGroupError | line: {0}".format(startingLine), "The group '{0}' was not found.".format(input[position]))
+  elif input[position] in output:
+    raise  Exception("GroupUsedTwice | line: {0}".format(position + 1), "The group '{0}' was used multiple times.".format(input[position]))
   else:
     name = input[position]
     output[name] = []
@@ -142,13 +145,17 @@ def ParseArrangement(input, position, output, groupConfig, startingLine):
 
 def ParseArrangements(input, groupConfig, startingLine):
   splitInput = input.split("\n")
+  arragements = []
   if splitInput[0] != "Arrangements":
     raise Exception("KeyWordError | line: {0}".format(startingLine), "The KeyWord 'Arrangements' was expected but not found.")
+  elif len(splitInput) == 1:
+    #no arrangement available
+    pass
   elif splitInput[1] != "":
     raise Exception("EmptyLineError | line: {0}".format(startingLine + 1), "An empty line was expected after KeyWord 'Arrangements' but not found.")
   else:
     i = 2
-    arragements = []
+    
     while i < len(splitInput):
       i = ParseArrangement(splitInput, i, arragements, groupConfig, startingLine + i)
   return arragements
@@ -178,7 +185,7 @@ def CheckOutput(output):
 
 def ParseTextFile(file, groupConfig):
   #read input file
-  f = open(file, "r")
+  f = open(file)
   originalInput = f.read()
   f.close()
   output = {}
@@ -203,40 +210,81 @@ def ParseTextFile(file, groupConfig):
   return output
 
 def ReplaceSpecialCharacters(text):
-  for i in range(0, len(text)):
+  output = copy.deepcopy(text)
+  for i in range(0, len(output)):
     #Ä
-    text[i] = text[i].replace(chr(195) + chr(8222), "\\'C4")
+    #text[i] = text[i].replace(chr(195) + chr(8222), "\\'c4")
+    #text[i] = text[i].replace("Ä", "\\'c4")
+    output[i] = output[i].replace(u'\u00c4', "\\'c4")
     #Ö
-    text[i] = text[i].replace(chr(195) + chr(8211), "\\'D6")
+    #text[i] = text[i].replace(chr(195) + chr(8211), "\\'d6")
+    #text[i] = text[i].replace("Ö", "\\'d6")
+    output[i] = output[i].replace(u'\u00d6', "\\'d6")
     #Ü
-    text[i] = text[i].replace(chr(195) + chr(339), "\\'DC")
+    #text[i] = text[i].replace(chr(195) + chr(339), "\\'dc")
+    #text[i] = text[i].replace("Ü", "\\'dc")
+    output[i] = output[i].replace(u'\u00dc', "\\'dc")
     #ä
-    text[i] = text[i].replace(chr(195) + chr(164), "\\'E4")
+    #text[i] = text[i].replace(chr(195) + chr(164), "\\'e4")
+    #text[i] = text[i].replace("ä", "\\'e4")
+    output[i] = output[i].replace(u'\u00e4', "\\'e4")
+    
     #ö
-    text[i] = text[i].replace(chr(195) + chr(182), "\\'F6")
+    #text[i] = text[i].replace(chr(195) + chr(182), "\\'f6")
+    #text[i] = text[i].replace("ö", "\\'f6")
+    output[i] = output[i].replace(u'\u00f6', "\\'f6")
     #ü
-    text[i] = text[i].replace(chr(195) + chr(188), "\\'FC")
+    #text[i] = text[i].replace(chr(195) + chr(188), "\\'fc")
+    #text[i] = text[i].replace("ü", "\\'fc")
+    output[i] = output[i].replace(u'\u00fc', "\\'fc")
     #ß
-    text[i] = text[i].replace(chr(195) + chr(376), "\\'DF")
+    #text[i] = text[i].replace(chr(195) + chr(376), "\\'df")
+    #text[i] = text[i].replace("ß", "\\'df")
+    output[i] = output[i].replace(u'\u00df', "\\'df")
     #’
-    text[i] = text[i].replace(chr(226) + chr(8364) + chr(8482), "\\'27")
+    #text[i] = text[i].replace(chr(226) + chr(8364) + chr(8482), "\\'27")
+    #text[i] = text[i].replace("’", "\\'27")
+    output[i] = output[i].replace(u'\u2019', "\\'27")
+  return output
+
+def ReplaceSpecialCharactersForNotes(text):
+  output = copy.deepcopy(text)
+  for i in range(0, len(output)):
+    #Ä
+    output[i] = output[i].replace(u'\u00c4', u"\u00c3\u201e")
+    #Ö
+    output[i] = output[i].replace(u'\u00d6', u"\u00c3\u2013")
+    #Ü
+    output[i] = output[i].replace(u'\u00dc', u"\u00c3\u0153")
+    #ä
+    output[i] = output[i].replace(u'\u00e4', "ä")
+    #ö
+    output[i] = output[i].replace(u'\u00f6', "ö")
+    #ü
+    output[i] = output[i].replace(u'\u00fc', "ü")
+    #ß
+    output[i] = output[i].replace(u'\u00df', u"\u00c3\u0178")
+    #’
+    output[i] = output[i].replace(u'\u2019', "'")
+  return output
 
 def CreateSlide(config, group, text, caption):
   slide = copy.deepcopy(config["slide"])
   #add notes
-  notes = text[0]
-  if len(text) == 2:
-    notes += "\n" + text[1]
+  myNotes = ReplaceSpecialCharactersForNotes(text)
+  notes = myNotes[0]
+  if len(myNotes) == 2:
+    notes += "\n" + myNotes[1]
   slide.set("notes", notes)
   displayElements = slide.find("array[@rvXMLIvarName='displayElements']")
   #create textElement
   textElement = copy.deepcopy(config["textElement"])
   #replace special characters
-  ReplaceSpecialCharacters(text)
+  myText = ReplaceSpecialCharacters(text)
   #update RTFData
-  inputText = config["textStyle"] + str.encode(text[0])
-  if len(text) == 2:
-    inputText += b'\\\n' + str.encode(text[1])
+  inputText = config["textStyle"] + str.encode(myText[0])
+  if len(myText) == 2:
+    inputText += b'\\\n' + str.encode(myText[1])
   inputText += b'}'
   rtfData =  base64.standard_b64encode(inputText)
   nsString = textElement.find("NSString[@rvXMLIvarName='RTFData']")
@@ -246,11 +294,11 @@ def CreateSlide(config, group, text, caption):
   if config["captionElement"] != None and caption != None:
     captionElement = copy.deepcopy(config["captionElement"])
     #replace special characters
-    ReplaceSpecialCharacters(caption)
+    myCaption = ReplaceSpecialCharacters(caption)
     #updateRTFData
-    inputText = config["captionStyle"] + str.encode(caption[0])
-    if len(caption) == 2:
-      inputText += b'\\\n' + str.encode(caption[1])
+    inputText = config["captionStyle"] + str.encode(myCaption[0])
+    if len(myCaption) == 2:
+      inputText += b'\\\n' + str.encode(myCaption[1])
     inputText += b'}'
     rtfData =  base64.standard_b64encode(inputText)
     nsString = captionElement.find("NSString[@rvXMLIvarName='RTFData']")

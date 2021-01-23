@@ -32,6 +32,60 @@
             </RVDisplaySlide>
          </array>
       </RVSlideGrouping>
+      <RVSlideGrouping color="1 1 1 1" name="Chorus 4" uuid="31913E1F-8428-4BD7-9841-C4ED77641BCE">
+         <array rvXMLIvarName="slides">
+            <RVDisplaySlide UUID="BB9C400F-36D6-4A47-BAB2-76FFF8BC3450" backgroundColor="0 0 0 0" chordChartPath="" drawingBackgroundColor="false" enabled="true" highlightColor="0 0 0 0" hotKey="" label="" notes="Bless the Lord oh my soul&#xA;Oh my soul" socialItemCount="1">
+               <array rvXMLIvarName="cues" />
+               <array rvXMLIvarName="displayElements">
+               </array>
+            </RVDisplaySlide>
+         </array>
+      </RVSlideGrouping>
+      <RVSlideGrouping color="1 1 1 1" name="Chorus 5" uuid="31913E1F-8428-4BD7-9841-C4ED77641BCE">
+         <array rvXMLIvarName="slides">
+            <RVDisplaySlide UUID="BB9C400F-36D6-4A47-BAB2-76FFF8BC3450" backgroundColor="0 0 0 0" chordChartPath="" drawingBackgroundColor="false" enabled="true" highlightColor="0 0 0 0" hotKey="" label="" notes="Bless the Lord oh my soul&#xA;Oh my soul" socialItemCount="1">
+               <array rvXMLIvarName="cues" />
+               <array rvXMLIvarName="displayElements">
+               </array>
+            </RVDisplaySlide>
+         </array>
+      </RVSlideGrouping>
+      <RVSlideGrouping color="1 1 1 1" name="Chorus 6" uuid="31913E1F-8428-4BD7-9841-C4ED77641BCE">
+         <array rvXMLIvarName="slides">
+            <RVDisplaySlide UUID="BB9C400F-36D6-4A47-BAB2-76FFF8BC3450" backgroundColor="0 0 0 0" chordChartPath="" drawingBackgroundColor="false" enabled="true" highlightColor="0 0 0 0" hotKey="" label="" notes="Bless the Lord oh my soul&#xA;Oh my soul" socialItemCount="1">
+               <array rvXMLIvarName="cues" />
+               <array rvXMLIvarName="displayElements">
+               </array>
+            </RVDisplaySlide>
+         </array>
+      </RVSlideGrouping>
+      <RVSlideGrouping color="1 1 1 1" name="Chorus 7" uuid="31913E1F-8428-4BD7-9841-C4ED77641BCE">
+         <array rvXMLIvarName="slides">
+            <RVDisplaySlide UUID="BB9C400F-36D6-4A47-BAB2-76FFF8BC3450" backgroundColor="0 0 0 0" chordChartPath="" drawingBackgroundColor="false" enabled="true" highlightColor="0 0 0 0" hotKey="" label="" notes="Bless the Lord oh my soul&#xA;Oh my soul" socialItemCount="1">
+               <array rvXMLIvarName="cues" />
+               <array rvXMLIvarName="displayElements">
+               </array>
+            </RVDisplaySlide>
+         </array>
+      </RVSlideGrouping>
+      <RVSlideGrouping color="1 1 1 1" name="Chorus 8" uuid="31913E1F-8428-4BD7-9841-C4ED77641BCE">
+         <array rvXMLIvarName="slides">
+            <RVDisplaySlide UUID="BB9C400F-36D6-4A47-BAB2-76FFF8BC3450" backgroundColor="0 0 0 0" chordChartPath="" drawingBackgroundColor="false" enabled="true" highlightColor="0 0 0 0" hotKey="" label="" notes="Bless the Lord oh my soul&#xA;Oh my soul" socialItemCount="1">
+               <array rvXMLIvarName="cues" />
+               <array rvXMLIvarName="displayElements">
+               </array>
+            </RVDisplaySlide>
+         </array>
+      </RVSlideGrouping>
+      <RVSlideGrouping color="1 1 1 1" name="Chorus 9" uuid="31913E1F-8428-4BD7-9841-C4ED77641BCE">
+         <array rvXMLIvarName="slides">
+            <RVDisplaySlide UUID="BB9C400F-36D6-4A47-BAB2-76FFF8BC3450" backgroundColor="0 0 0 0" chordChartPath="" drawingBackgroundColor="false" enabled="true" highlightColor="0 0 0 0" hotKey="" label="" notes="Bless the Lord oh my soul&#xA;Oh my soul" socialItemCount="1">
+               <array rvXMLIvarName="cues" />
+               <array rvXMLIvarName="displayElements">
+               </array>
+            </RVDisplaySlide>
+         </array>
+      </RVSlideGrouping>
       <RVSlideGrouping color="0 1 1 1" name="Verse 1" uuid="31913E1F-8428-4BD7-9841-C4ED77641BCE">
          <array rvXMLIvarName="slides">
             <RVDisplaySlide UUID="BB9C400F-36D6-4A47-BAB2-76FFF8BC3450" backgroundColor="0 0 0 0" chordChartPath="" drawingBackgroundColor="false" enabled="true" highlightColor="0 0 0 0" hotKey="Q" label="" notes="Bless the Lord oh my soul&#xA;Oh my soul" socialItemCount="1">
@@ -51,6 +105,15 @@
          </array>
       </RVSlideGrouping>
       <RVSlideGrouping color="0.5 0 0.5 1" name="Verse 3" uuid="31913E1F-8428-4BD7-9841-C4ED77641BCE">
+         <array rvXMLIvarName="slides">
+            <RVDisplaySlide UUID="BB9C400F-36D6-4A47-BAB2-76FFF8BC3450" backgroundColor="0 0 0 0" chordChartPath="" drawingBackgroundColor="false" enabled="true" highlightColor="0 0 0 0" hotKey="E" label="" notes="Bless the Lord oh my soul&#xA;Oh my soul" socialItemCount="1">
+               <array rvXMLIvarName="cues" />
+               <array rvXMLIvarName="displayElements">
+               </array>
+            </RVDisplaySlide>
+         </array>
+      </RVSlideGrouping>
+      <RVSlideGrouping color="0.5 0 0.5 1" name="Verse 4" uuid="31913E1F-8428-4BD7-9841-C4ED77641BCE">
          <array rvXMLIvarName="slides">
             <RVDisplaySlide UUID="BB9C400F-36D6-4A47-BAB2-76FFF8BC3450" backgroundColor="0 0 0 0" chordChartPath="" drawingBackgroundColor="false" enabled="true" highlightColor="0 0 0 0" hotKey="E" label="" notes="Bless the Lord oh my soul&#xA;Oh my soul" socialItemCount="1">
                <array rvXMLIvarName="cues" />
@@ -95,7 +158,43 @@
             </RVDisplaySlide>
          </array>
       </RVSlideGrouping>
+      <RVSlideGrouping color="0 0 0 1" name="Prechorus 1" uuid="31913E1F-8428-4BD7-9841-C4ED77641BCE">
+         <array rvXMLIvarName="slides">
+            <RVDisplaySlide UUID="BB9C400F-36D6-4A47-BAB2-76FFF8BC3450" backgroundColor="0 0 0 0" chordChartPath="" drawingBackgroundColor="false" enabled="true" highlightColor="0 0 0 0" hotKey="" label="" notes="Bless the Lord oh my soul&#xA;Oh my soul" socialItemCount="1">
+               <array rvXMLIvarName="cues" />
+               <array rvXMLIvarName="displayElements">
+               </array>
+            </RVDisplaySlide>
+         </array>
+      </RVSlideGrouping>
+      <RVSlideGrouping color="0 0 0 1" name="Prechorus 2" uuid="31913E1F-8428-4BD7-9841-C4ED77641BCE">
+         <array rvXMLIvarName="slides">
+            <RVDisplaySlide UUID="BB9C400F-36D6-4A47-BAB2-76FFF8BC3450" backgroundColor="0 0 0 0" chordChartPath="" drawingBackgroundColor="false" enabled="true" highlightColor="0 0 0 0" hotKey="" label="" notes="Bless the Lord oh my soul&#xA;Oh my soul" socialItemCount="1">
+               <array rvXMLIvarName="cues" />
+               <array rvXMLIvarName="displayElements">
+               </array>
+            </RVDisplaySlide>
+         </array>
+      </RVSlideGrouping>
       <RVSlideGrouping color="0 0 0 1" name="Tag 1" uuid="31913E1F-8428-4BD7-9841-C4ED77641BCE">
+         <array rvXMLIvarName="slides">
+            <RVDisplaySlide UUID="BB9C400F-36D6-4A47-BAB2-76FFF8BC3450" backgroundColor="0 0 0 0" chordChartPath="" drawingBackgroundColor="false" enabled="true" highlightColor="0 0 0 0" hotKey="" label="" notes="Bless the Lord oh my soul&#xA;Oh my soul" socialItemCount="1">
+               <array rvXMLIvarName="cues" />
+               <array rvXMLIvarName="displayElements">
+               </array>
+            </RVDisplaySlide>
+         </array>
+      </RVSlideGrouping>
+      <RVSlideGrouping color="0 0 0 1" name="Tag 2" uuid="31913E1F-8428-4BD7-9841-C4ED77641BCE">
+         <array rvXMLIvarName="slides">
+            <RVDisplaySlide UUID="BB9C400F-36D6-4A47-BAB2-76FFF8BC3450" backgroundColor="0 0 0 0" chordChartPath="" drawingBackgroundColor="false" enabled="true" highlightColor="0 0 0 0" hotKey="" label="" notes="Bless the Lord oh my soul&#xA;Oh my soul" socialItemCount="1">
+               <array rvXMLIvarName="cues" />
+               <array rvXMLIvarName="displayElements">
+               </array>
+            </RVDisplaySlide>
+         </array>
+      </RVSlideGrouping>
+      <RVSlideGrouping color="0 0 0 1" name="Tag 3" uuid="31913E1F-8428-4BD7-9841-C4ED77641BCE">
          <array rvXMLIvarName="slides">
             <RVDisplaySlide UUID="BB9C400F-36D6-4A47-BAB2-76FFF8BC3450" backgroundColor="0 0 0 0" chordChartPath="" drawingBackgroundColor="false" enabled="true" highlightColor="0 0 0 0" hotKey="" label="" notes="Bless the Lord oh my soul&#xA;Oh my soul" socialItemCount="1">
                <array rvXMLIvarName="cues" />
