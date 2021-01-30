@@ -6,9 +6,19 @@ import base64
 import sys
 import copy
 import uuid
+import io
+
+class ScriptException(Exception):
+  def __init__(self, name, line, text):
+    self.name = name
+    self.line = line
+    self.text = text
+  def __str__(self):
+    return repr(self)
 
 def ParseConfigFiles(configAll):
   #parse masterConfig
+  print('Parsing "masterConfig_Groups.pro6"')
   configAll["groupConfigs"] = {}
   tree = ET.parse("masterConfig_Groups.pro6")
   groups = tree.find("array[@rvXMLIvarName='groups']")
@@ -19,7 +29,8 @@ def ParseConfigFiles(configAll):
     configAll["groupConfigs"][group.get("name")] = groupOut
   #loop over all config files in the subfolders
   configAll["fileConfigs"] = []
-  for file in  glob.glob("../**/config_*.pro6", recursive = True):
+  for file in  glob.glob("../**/config_*.pro6"):
+    print('Parsing "{0}"'.format(file))
     configDict = {}
     #save path
     configDict["path"] = file.rsplit("\\", 1)[0]
@@ -39,7 +50,7 @@ def ParseConfigFiles(configAll):
     textStyle = base64.standard_b64decode(rtfDataText.text).split(b'strokec0 ')[0] + b'strokec0 '
     captionElement = displayElements.find("RVTextElement[@displayName='CaptionTextElement']")
     captionStyle = ""
-    if captionElement:
+    if captionElement != None:
       rtfDataText = captionElement.find("NSString[@rvXMLIvarName='RTFData']")
       captionStyle = base64.standard_b64decode(rtfDataText.text).split(b'strokec0 ')[0] + b'strokec0 '
     lowerShapeElement = displayElements.find("RVShapeElement[@displayName='BottomLineShapeElement']")
@@ -49,11 +60,11 @@ def ParseConfigFiles(configAll):
     arrangementNSString = arrangement[0][0]
     #remove not needed elements
     displayElements.remove(textElement)
-    if captionElement:
+    if captionElement != None:
       displayElements.remove(captionElement)
-    if lowerShapeElement:
+    if lowerShapeElement != None:
       displayElements.remove(lowerShapeElement)
-    if upperShapeElement:
+    if upperShapeElement != None:
       displayElements.remove(upperShapeElement)
     slides.remove(slide)
     groups.remove(group)
@@ -85,22 +96,22 @@ def ParseSlide(input, position, output, startingLine):
     lines += 1
   #check for empty line after slide
   if position + lines < len(input) and input[position + lines] != "":
-    raise Exception("EmptyLineError | line: {0}".format(startingLine + lines), "An empty line was expected after the end of the slide.")
+    raise ScriptException("EmptyLineError", "{0}".format(startingLine + lines), "An empty line was expected after the end of the slide.")
   output.append(slide)
   return position + lines + 1
 
 def ParseGroup(input, position, output, groupConfig, startingLine):
   #check if group name is as required
   if input[position] not in groupConfig:
-     raise Exception("UnknownGroupError | line: {0}".format(startingLine), "The group '{0}' was not found.".format(input[position]))
+     raise ScriptException("UnknownGroupError", "line: {0}".format(startingLine), "The group '{0}' was not found.".format(input[position]))
   elif input[position] in output:
-    raise  Exception("GroupUsedTwice | line: {0}".format(position + 1), "The group '{0}' was used multiple times.".format(input[position]))
+    raise  ScriptException("GroupUsedTwice", "line: {0}".format(position + 1), "The group '{0}' was used multiple times.".format(input[position]))
   else:
     name = input[position]
     output[name] = []
     #check empty line after group name
     if input[position + 1] != "":
-       raise Exception("EmptyLineError | line: {0}".format(startingLine + 1), "An empty line was expected after group '{0}' but not found.".format(outputGroup["name"]))
+       raise ScriptException("EmptyLineError", "line: {0}".format(startingLine + 1), "An empty line was expected after group '{0}' but not found.".format(outputGroup["name"]))
     else:
       i = position + 2
       #loop over all slides until next group is found
@@ -117,7 +128,7 @@ def ParseLanguage(input, groupConfig, startingLine):
   language["groups"] = {}
   #check for empty line after language name
   if input[1] != "":
-    raise Exception("EmptyLineError | line: {0}".format(startingLine + 1), "An empty line was expected after language '{0}' but not found.".format(language["name"]))
+    raise ScriptException("EmptyLineError", "line: {0}".format(startingLine + 1), "An empty line was expected after language '{0}' but not found.".format(language["name"]))
   i = 2
   #loop over all input data and parse groups
   while i < len(input):
@@ -129,14 +140,14 @@ def ParseArrangement(input, position, output, groupConfig, startingLine):
   arrangement["name"] = input[position]
   #check for empty line after arrangement name
   if input[position + 1] != "":
-    raise Exception("EmptyLineError | line: {0}".format(startingLine + 1), "An empty line was expected after arrangement '{0}' but not found.".format(arrangement["name"]))
+    raise ScriptException("EmptyLineError", "line: {0}".format(startingLine + 1), "An empty line was expected after arrangement '{0}' but not found.".format(arrangement["name"]))
   else:
     i = position + 2
     arrangement["order"] = []
     #loop over all groups in arrangement, verify they are as required and add them to the arrangement
     while i < len(input) and input[i] != "":
       if input[i] not in groupConfig:
-        raise Exception("UnknownGroupError | line: {0}".format(startingLine + i - position), "The group '{0}' was not found.".format(input[i]))
+        raise ScriptException("UnknownGroupError", "line: {0}".format(startingLine + i - position), "The group '{0}' was not found.".format(input[i]))
       else:
         arrangement["order"].append(input[i])
       i += 1
@@ -147,12 +158,12 @@ def ParseArrangements(input, groupConfig, startingLine):
   splitInput = input.split("\n")
   arragements = []
   if splitInput[0] != "Arrangements":
-    raise Exception("KeyWordError | line: {0}".format(startingLine), "The KeyWord 'Arrangements' was expected but not found.")
+    raise ScriptException("KeyWordError", "line: {0}".format(startingLine), "The KeyWord 'Arrangements' was expected but not found.")
   elif len(splitInput) == 1:
     #no arrangement available
     pass
   elif splitInput[1] != "":
-    raise Exception("EmptyLineError | line: {0}".format(startingLine + 1), "An empty line was expected after KeyWord 'Arrangements' but not found.")
+    raise ScriptException("EmptyLineError", "line: {0}".format(startingLine + 1), "An empty line was expected after KeyWord 'Arrangements' but not found.")
   else:
     i = 2
     
@@ -165,28 +176,28 @@ def CheckOutput(output):
   if len(output["languages"]) == 2:
     #check if both languages have same number of groups
     if len(output["languages"][0]["groups"]) != len(output["languages"][1]["groups"]):
-      raise Exception("GroupError | Number of Groups", "The language '{0}' has '{1}' groups but language '{2}' has '{3}'".format(output["languages"][0]["name"], len(output["languages"][0]["groups"]), output["languages"][1]["name"], len(output["languages"][1]["groups"])))
+      raise ScriptException("GroupError", "-", "The language '{0}' has '{1}' groups but language '{2}' has '{3}'".format(output["languages"][0]["name"], len(output["languages"][0]["groups"]), output["languages"][1]["name"], len(output["languages"][1]["groups"])))
     #check if all groups are in both languages
     for group in output["languages"][0]["groups"]:
       if group not in output["languages"][1]["groups"]:
-        raise Exception("GroupError | group: {0}".format(group), "The group '{0}' was found in language '{1}' but not in '{2}'".format(group, output["languages"][0]["name"], output["languages"][1]["name"]))
+        raise ScriptException("GroupError", "group: {0}".format(group), "The group '{0}' was found in language '{1}' but not in '{2}'".format(group, output["languages"][0]["name"], output["languages"][1]["name"]))
     #check if all groups have same number of slides and lines per slide
     for group in output["languages"][0]["groups"]:
       if len(output["languages"][0]["groups"][group]) != len(output["languages"][1]["groups"][group]):
-        raise Exception("GroupError | group: {0}".format(group), "The group '{0}' has '{1}' slides in language '{2}' but '{3}' slides in language '{4}'".format(group, len(output["languages"][0]["groups"][group]), output["languages"][0]["name"], len(output["languages"][1]["groups"][group]), output["languages"][1]["name"]))
+        raise ScriptException("GroupError", "group: {0}".format(group), "The group '{0}' has '{1}' slides in language '{2}' but '{3}' slides in language '{4}'".format(group, len(output["languages"][0]["groups"][group]), output["languages"][0]["name"], len(output["languages"][1]["groups"][group]), output["languages"][1]["name"]))
       for i in range(0, len(output["languages"][0]["groups"][group])):
         if len(output["languages"][0]["groups"][group][i]) != len(output["languages"][1]["groups"][group][i]):
-          raise Exception("SlideError | group: {0}".format(group), "Slide number '{0}' in group '{1}' has '{2}' lines in language '{3}' but '{4}' lines in language '{5}'".format(i, group, len(output["languages"][0]["groups"][group][i]), output["languages"][0]["name"], len(output["languages"][1]["groups"][group][i]), output["languages"][1]["name"]))
+          raise ScriptException("SlideError", "group: {0}".format(group), "Slide number '{0}' in group '{1}' has '{2}' lines in language '{3}' but '{4}' lines in language '{5}'".format(i, group, len(output["languages"][0]["groups"][group][i]), output["languages"][0]["name"], len(output["languages"][1]["groups"][group][i]), output["languages"][1]["name"]))
     #check if arangements only consist of available groups
     for arrangement in output["arrangements"]:
       for group in arrangement["order"]:
         if group not in output["languages"][0]["groups"] and group != "Instrumental":
-          raise Exception("ArrangementError | arrangement: {0}".format(arrangement["name"]), "The group '{0}' used in arrangement '{1}' was not found".format(group, arrangement["name"]))
+          raise ScriptException("ArrangementError", "arrangement: {0}".format(arrangement["name"]), "The group '{0}' used in arrangement '{1}' was not found".format(group, arrangement["name"]))
 
 def ParseTextFile(file, groupConfig):
   #read input file
-  f = open(file)
-  originalInput = f.read()
+  f = io.open(file, 'rb')
+  originalInput = f.read().decode('utf-8')
   f.close()
   output = {}
   output["name"] = file.rstrip(".txt")
@@ -228,7 +239,6 @@ def ReplaceSpecialCharacters(text):
     #text[i] = text[i].replace(chr(195) + chr(164), "\\'e4")
     #text[i] = text[i].replace("ä", "\\'e4")
     output[i] = output[i].replace(u'\u00e4', "\\'e4")
-    
     #ö
     #text[i] = text[i].replace(chr(195) + chr(182), "\\'f6")
     #text[i] = text[i].replace("ö", "\\'f6")
@@ -271,7 +281,8 @@ def ReplaceSpecialCharactersForNotes(text):
 def CreateSlide(config, group, text, caption):
   slide = copy.deepcopy(config["slide"])
   #add notes
-  myNotes = ReplaceSpecialCharactersForNotes(text)
+  #myNotes = ReplaceSpecialCharactersForNotes(text)
+  myNotes =text
   notes = myNotes[0]
   if len(myNotes) == 2:
     notes += "\n" + myNotes[1]
@@ -282,9 +293,9 @@ def CreateSlide(config, group, text, caption):
   #replace special characters
   myText = ReplaceSpecialCharacters(text)
   #update RTFData
-  inputText = config["textStyle"] + str.encode(myText[0])
+  inputText = config["textStyle"] + myText[0]
   if len(myText) == 2:
-    inputText += b'\\\n' + str.encode(myText[1])
+    inputText += b'\\\n' + myText[1]
   inputText += b'}'
   rtfData =  base64.standard_b64encode(inputText)
   nsString = textElement.find("NSString[@rvXMLIvarName='RTFData']")
@@ -296,9 +307,9 @@ def CreateSlide(config, group, text, caption):
     #replace special characters
     myCaption = ReplaceSpecialCharacters(caption)
     #updateRTFData
-    inputText = config["captionStyle"] + str.encode(myCaption[0])
+    inputText = config["captionStyle"] + myCaption[0]
     if len(myCaption) == 2:
-      inputText += b'\\\n' + str.encode(myCaption[1])
+      inputText += b'\\\n' + myCaption[1]
     inputText += b'}'
     rtfData =  base64.standard_b64encode(inputText)
     nsString = captionElement.find("NSString[@rvXMLIvarName='RTFData']")
@@ -391,8 +402,9 @@ def CreateOutput(config, groupConfig, name, language, caption, arrangements):
   CreateArrangements(output, arrangements, uuids)
   #write output to file
   file = "{0}\\{1}_{2}_{3}.pro6".format(config["path"], name, language["name"], config["styleName"])
-  f = open(file , "w")
-  f.write(str(ET.tostring(output, "unicode")))
+  f = io.open(file , 'w')
+  temp = ET.tostring(output).decode()
+  f.write(temp)
   f.close()
 
 def CreateOutputs(config, groupConfig, inputText):
@@ -408,18 +420,20 @@ configAll = {}
 #TODO add try and errors in parsing
 try:
   ParseConfigFiles(configAll)
-except Exception as inst:
-  errorName, errorText = inst.args
-  print("| {0} | {2} |".format(errorName, errorText))
-#tempPrintConfig(configs)
+except ScriptException as e:
+  print("| {0} | {1} | {2} |".format(name, line, text))
+except Exception as e:
+  print(e)
 #loop over all files in master
-for file in  glob.glob("*.txt", recursive = False):
+for file in  glob.glob("*.txt"):
   try:
+    print('Generating "{}"'.format(file))
     inputText = ParseTextFile(file,  configAll["groupConfigs"])
     #loop over configs and create output
     for config in configAll["fileConfigs"]:
       CreateOutputs(config, configAll["groupConfigs"], inputText)
-  except Exception as inst:
-    errorName, errorText = inst.args
-    print("| {0} | file: {1} | {2} |".format(errorName, file, errorText))
+  except ScriptException as e:
+    print("| {0} | {1} | {2} | {3} |".format(file, e.name, e.line, e.text))
+  except Exception as e:
+    print(e)
 
