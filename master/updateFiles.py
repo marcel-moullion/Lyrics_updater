@@ -44,6 +44,10 @@ def ParseConfigFiles(configAll):
     group = groups.find("RVSlideGrouping")
     slides = group.find("array[@rvXMLIvarName='slides']")
     slide = slides.find("RVDisplaySlide")
+    if ("Only one line" == slide.get("notes")):
+      configDict["singleLine"] = True;
+    else:
+      configDict["singleLine"] = False;
     displayElements = slide.find("array[@rvXMLIvarName='displayElements']")
     textElement = displayElements.find("RVTextElement[@displayName='TextElement']")
     rtfDataText = textElement.find("NSString[@rvXMLIvarName='RTFData']")
@@ -281,10 +285,9 @@ def ReplaceSpecialCharactersForNotes(text):
 def CreateSlide(config, group, text, caption):
   slide = copy.deepcopy(config["slide"])
   #add notes
-  #myNotes = ReplaceSpecialCharactersForNotes(text)
-  myNotes =text
+  myNotes = text
   notes = myNotes[0]
-  if len(myNotes) == 2:
+  if (False == config["singleLine"]) and (len(myNotes) == 2):
     notes += "\n" + myNotes[1]
   slide.set("notes", notes)
   displayElements = slide.find("array[@rvXMLIvarName='displayElements']")
@@ -294,7 +297,7 @@ def CreateSlide(config, group, text, caption):
   myText = ReplaceSpecialCharacters(text)
   #update RTFData
   inputText = config["textStyle"] + myText[0]
-  if len(myText) == 2:
+  if (False == config["singleLine"]) and (len(myText) == 2):
     inputText += b'\\\n' + myText[1]
   inputText += b'}'
   rtfData =  base64.standard_b64encode(inputText)
@@ -308,7 +311,7 @@ def CreateSlide(config, group, text, caption):
     myCaption = ReplaceSpecialCharacters(caption)
     #updateRTFData
     inputText = config["captionStyle"] + myCaption[0]
-    if len(myCaption) == 2:
+    if (False == config["singleLine"]) and (len(myCaption) == 2):
       inputText += b'\\\n' + myCaption[1]
     inputText += b'}'
     rtfData =  base64.standard_b64encode(inputText)
@@ -320,11 +323,45 @@ def CreateSlide(config, group, text, caption):
     lowerShapeElement = copy.deepcopy(config["lowerShapeElement"])
     displayElements.append(lowerShapeElement)
   #create upperShapeElement
-  if config["upperShapeElement"] != None and len(text) == 2:
+  if (config["upperShapeElement"] != None) and (False == config["singleLine"]) and (len(text) == 2):
     upperShapeElement = copy.deepcopy(config["upperShapeElement"])
     displayElements.append(upperShapeElement)
   slides = group.find("array[@rvXMLIvarName='slides']")
   slides.append(slide)
+  if (True == config["singleLine"]) and (len(text) == 2):
+    slide = copy.deepcopy(config["slide"])
+    #add notes
+    notes = myNotes[1]
+    slide.set("notes", notes)
+    displayElements = slide.find("array[@rvXMLIvarName='displayElements']")
+    #create textElement
+    textElement = copy.deepcopy(config["textElement"])
+    #update RTFData
+    inputText = config["textStyle"] + myText[1]
+    inputText += b'}'
+    rtfData =  base64.standard_b64encode(inputText)
+    nsString = textElement.find("NSString[@rvXMLIvarName='RTFData']")
+    nsString.text = rtfData.decode()
+    displayElements.append(textElement)
+    #create captionElement
+    if config["captionElement"] != None and caption != None:
+      captionElement = copy.deepcopy(config["captionElement"])  
+      inputText = config["captionStyle"] + myCaption[1]
+      inputText += b'}'
+      rtfData =  base64.standard_b64encode(inputText)
+      nsString = captionElement.find("NSString[@rvXMLIvarName='RTFData']")
+      nsString.text = rtfData.decode()
+      displayElements.append(captionElement)
+       #create lowerShapeElement
+    if config["lowerShapeElement"] != None:
+      lowerShapeElement = copy.deepcopy(config["lowerShapeElement"])
+      displayElements.append(lowerShapeElement)
+    #create upperShapeElement
+    if (config["upperShapeElement"] != None) and (False == config["singleLine"]) and (len(text) == 2):
+      upperShapeElement = copy.deepcopy(config["upperShapeElement"])
+      displayElements.append(upperShapeElement)
+    slides = group.find("array[@rvXMLIvarName='slides']")
+    slides.append(slide)    
 
 def CreateGroup(config, groupConfig, output, name, language, caption):
   group = copy.deepcopy(config["group"])
