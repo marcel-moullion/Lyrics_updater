@@ -1,4 +1,5 @@
-# -*- coding: iso-8859-1 -*-
+# -- coding: utf-8 --
+
 import glob
 import re
 import xml.etree.ElementTree as ET
@@ -7,6 +8,9 @@ import sys
 import copy
 import uuid
 import io
+import os
+import codecs
+import unicodedata
 
 class ScriptException(Exception):
   def __init__(self, name, line, text):
@@ -33,7 +37,7 @@ def ParseConfigFiles(configAll):
     print('Parsing "{0}"'.format(file))
     configDict = {}
     #save path
-    configDict["path"] = file.rsplit("\\", 1)[0]
+    configDict["path"] = os.path.dirname(os.path.abspath(file))
     #save style name
     configDict["styleName"] = re.search('config_(.*).pro6', file).group(1)
     #read config file
@@ -198,13 +202,13 @@ def CheckOutput(output):
         if group not in output["languages"][0]["groups"] and group != "Instrumental":
           raise ScriptException("ArrangementError", "arrangement: {0}".format(arrangement["name"]), "The group '{0}' used in arrangement '{1}' was not found".format(group, arrangement["name"]))
 
-def ParseTextFile(file, groupConfig):
+def ParseTextFile(directory, file, groupConfig):
   #read input file
-  f = io.open(file, 'rb')
-  originalInput = f.read().decode('utf-8')
+  f = open(os.path.join(directory, file), 'rb')
+  originalInput = f.read().decode("utf-8")
   f.close()
   output = {}
-  output["name"] = file.rstrip(".txt")
+  output["name"] = unicodedata.normalize("NFC", file).rstrip(".txt")
   output["languages"] = []
   #remove trailing newlines
   originalInput = originalInput.rstrip("\n")
@@ -424,7 +428,7 @@ def CreateArrangements(output, arrangements, uuids):
 def CreateOutput(config, groupConfig, name, language, caption, arrangements):
   output = copy.deepcopy(config["rvPresentationDocument"])
   #add title
-  output.set("CCLISongTitle", "{0}_{1}_{2}".format(name, language["name"], config["styleName"]))
+  output.set(u"CCLISongTitle", u"{0}_{1}_{2}".format(name, language["name"], config["styleName"]))
   uuids = {}
   #create groups
   for group in language["groups"]:
@@ -438,9 +442,9 @@ def CreateOutput(config, groupConfig, name, language, caption, arrangements):
   #create arrangements
   CreateArrangements(output, arrangements, uuids)
   #write output to file
-  file = "{0}\\{1}_{2}_{3}.pro6".format(config["path"], name, language["name"], config["styleName"])
-  f = io.open(file , 'w')
-  temp = ET.tostring(output).decode()
+  file = os.path.join(config["path"], u"{0}_{1}_{2}.pro6".format(name, language["name"], config["styleName"]))
+  f = open(file , 'w')
+  temp = ET.tostring(output)
   f.write(temp)
   f.close()
 
@@ -462,13 +466,18 @@ except ScriptException as e:
 except Exception as e:
   print(e)
 #loop over all files in master
-for file in  glob.glob("*.txt"):
+__file = __file__.decode(sys.getfilesystemencoding())
+dirname = os.path.dirname(os.path.abspath(__file))
+folder = u"textFiles"
+root = os.path.join(dirname, folder)
+for file in os.listdir(root):
   try:
-    print('Generating "{}"'.format(file))
-    inputText = ParseTextFile(file,  configAll["groupConfigs"])
-    #loop over configs and create output
-    for config in configAll["fileConfigs"]:
-      CreateOutputs(config, configAll["groupConfigs"], inputText)
+    if file.endswith(".txt"):
+      print(u"Generating {0}".format(unicodedata.normalize("NFC", file)))
+      inputText = ParseTextFile(root, file,  configAll["groupConfigs"])
+      #loop over configs and create output
+      for config in configAll["fileConfigs"]:
+        CreateOutputs(config, configAll["groupConfigs"], inputText)
   except ScriptException as e:
     print("| {0} | {1} | {2} | {3} |".format(file, e.name, e.line, e.text))
   except Exception as e:
