@@ -29,13 +29,16 @@ def ParseConfigFiles(configAll):
     configAll["groupConfigs"] = {}
     tree = ET.parse("masterConfig_Groups.pro6")
     groups = tree.find("array[@rvXMLIvarName='groups']")
+
     for group in groups:
         groupOut = {}
         groupOut["color"] = group.get("color")
         groupOut["hotKey"] = group[0][0].get("hotKey")
         configAll["groupConfigs"][group.get("name")] = groupOut
+
     #loop over all config files in the subfolders
     configAll["fileConfigs"] = []
+
     for file in glob.glob("../**/config_*.pro6"):
         print('Parsing "{0}"'.format(file))
         configDict = {}
@@ -141,7 +144,7 @@ def ParseGroup(input, position, output, groupConfig, startingLine):
             raise ScriptException(
                 "EmptyLineError", "line: {0}".format(startingLine + 1),
                 "An empty line was expected after group '{0}' but not found.".
-                format(outputGroup["name"]))
+                format(output["name"]))
         else:
             i = position + 2
             #loop over all slides until next group is found
