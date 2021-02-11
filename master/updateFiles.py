@@ -258,7 +258,7 @@ def ReplaceSpecialCharacters(text):
     #ß
     #text[i] = text[i].replace(chr(195) + chr(376), "\\'df")
     #text[i] = text[i].replace("ß", "\\'df")
-    output[i] = output[i].replace(u'\u00df', "\\'df")
+    output[i] = output[i].replace(u'\u00df', "ss")
     #’
     #text[i] = text[i].replace(chr(226) + chr(8364) + chr(8482), "\\'27")
     #text[i] = text[i].replace("’", "\\'27")
@@ -288,6 +288,8 @@ def ReplaceSpecialCharactersForNotes(text):
 
 def CreateSlide(config, group, text, caption):
   slide = copy.deepcopy(config["slide"])
+  #add uuid
+  slide.set("UUID", str(uuid.uuid4()))
   #add notes
   myNotes = text
   notes = myNotes[0]
@@ -297,6 +299,8 @@ def CreateSlide(config, group, text, caption):
   displayElements = slide.find("array[@rvXMLIvarName='displayElements']")
   #create textElement
   textElement = copy.deepcopy(config["textElement"])
+  #add uuid
+  textElement.set("UUID", str(uuid.uuid4()))
   #replace special characters
   myText = ReplaceSpecialCharacters(text)
   #update RTFData
@@ -311,6 +315,8 @@ def CreateSlide(config, group, text, caption):
   #create captionElement
   if config["captionElement"] != None and caption != None:
     captionElement = copy.deepcopy(config["captionElement"])
+    #add uuid
+    captionElement.set("UUID", str(uuid.uuid4()))
     #replace special characters
     myCaption = ReplaceSpecialCharacters(caption)
     #updateRTFData
@@ -325,10 +331,14 @@ def CreateSlide(config, group, text, caption):
   #create lowerShapeElement
   if config["lowerShapeElement"] != None:
     lowerShapeElement = copy.deepcopy(config["lowerShapeElement"])
+    #add uuid
+    lowerShapeElement.set("UUID", str(uuid.uuid4()))
     displayElements.append(lowerShapeElement)
   #create upperShapeElement
   if (config["upperShapeElement"] != None) and (False == config["singleLine"]) and (len(text) == 2):
     upperShapeElement = copy.deepcopy(config["upperShapeElement"])
+    #add uuid
+    upperShapeElement.set("UUID", str(uuid.uuid4()))
     displayElements.append(upperShapeElement)
   slides = group.find("array[@rvXMLIvarName='slides']")
   slides.append(slide)
@@ -403,6 +413,8 @@ def CreateInstrumental(config, groupConfig, output):
   #add empty slide
   slide = copy.deepcopy(config["slide"])
   slide.set("notes", "")
+  #add uuid
+  slide.set("UUID", str(uuid.uuid4()))
   slides = instrumental.find("array[@rvXMLIvarName='slides']")
   slides.append(slide)
   #set instrumental hotKey
@@ -417,6 +429,8 @@ def CreateArrangements(output, arrangements, uuids):
   arrangementsOutput = output.find("array[@rvXMLIvarName='arrangements']")
   for arrangement in arrangements:
     arrangementOutput = copy.deepcopy(config["arrangement"])
+    #add uuid
+    arrangementOutput.set("UUID", str(uuid.uuid4()))
     arrangementOutput.set("name", arrangement["name"])
     groupIds = arrangementOutput.find("array[@rvXMLIvarName='groupIDs']")
     for group in arrangement["order"]:
@@ -427,6 +441,8 @@ def CreateArrangements(output, arrangements, uuids):
 
 def CreateOutput(config, groupConfig, name, language, caption, arrangements):
   output = copy.deepcopy(config["rvPresentationDocument"])
+  #add uuid
+  output.set("uuid", str(uuid.uuid4()))
   #add title
   output.set(u"CCLISongTitle", u"{0}_{1}_{2}".format(name, language["name"], config["styleName"]))
   uuids = {}
