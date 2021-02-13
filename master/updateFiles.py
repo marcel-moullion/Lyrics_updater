@@ -208,7 +208,7 @@ def ParseTextFile(directory, file, groupConfig):
   originalInput = f.read().decode("utf-8")
   f.close()
   output = {}
-  output["name"] = unicodedata.normalize("NFC", file).replace(".txt", "")
+  output["name"] = unicodedata.normalize("NFC", file).rstrip(".txt")
   output["languages"] = []
   #remove trailing newlines
   originalInput = originalInput.rstrip("\n")
@@ -430,7 +430,7 @@ def CreateArrangements(output, arrangements, uuids):
   for arrangement in arrangements:
     arrangementOutput = copy.deepcopy(config["arrangement"])
     #add uuid
-    arrangementOutput.set("uuid", str(uuid.uuid4()))
+    arrangementOutput.set("UUID", str(uuid.uuid4()))
     arrangementOutput.set("name", arrangement["name"])
     groupIds = arrangementOutput.find("array[@rvXMLIvarName='groupIDs']")
     for group in arrangement["order"]:
