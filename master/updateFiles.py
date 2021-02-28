@@ -428,12 +428,16 @@ def CreateSlide(config, group, text, caption):
     slides.append(slide)
     if (True == config["singleLine"]) and (len(text) == 2):
         slide = copy.deepcopy(config["slide"])
+        #add uuid
+        slide.set("UUID", str(uuid.uuid4()))
         #add notes
         notes = myNotes[1]
         slide.set("notes", notes)
         displayElements = slide.find("array[@rvXMLIvarName='displayElements']")
         #create textElement
         textElement = copy.deepcopy(config["textElement"])
+        #add uuid
+        textElement.set("UUID", str(uuid.uuid4()))
         #update RTFData
         inputText = config["textStyle"] + myText[1]
         inputText += b'}'
@@ -444,6 +448,8 @@ def CreateSlide(config, group, text, caption):
         #create captionElement
         if config["captionElement"] != None and caption != None:
             captionElement = copy.deepcopy(config["captionElement"])
+            #add uuid
+            captionElement.set("UUID", str(uuid.uuid4()))
             inputText = config["captionStyle"] + myCaption[1]
             inputText += b'}'
             rtfData = base64.standard_b64encode(inputText)
@@ -454,11 +460,15 @@ def CreateSlide(config, group, text, caption):
             #create lowerShapeElement
         if config["lowerShapeElement"] != None:
             lowerShapeElement = copy.deepcopy(config["lowerShapeElement"])
+            #add uuid
+            lowerShapeElement.set("UUID", str(uuid.uuid4()))
             displayElements.append(lowerShapeElement)
         #create upperShapeElement
         if (config["upperShapeElement"] !=
                 None) and (False == config["singleLine"]) and (len(text) == 2):
             upperShapeElement = copy.deepcopy(config["upperShapeElement"])
+            #add uuid
+            upperShapeElement.set("UUID", str(uuid.uuid4()))
             displayElements.append(upperShapeElement)
         slides = group.find("array[@rvXMLIvarName='slides']")
         slides.append(slide)
