@@ -11,6 +11,9 @@ import io
 import os
 import codecs
 import unicodedata
+import Tkinter
+import Tkconstants
+import tkFileDialog
 
 
 class ScriptException(Exception):
@@ -599,8 +602,12 @@ __file = __file__.decode(sys.getfilesystemencoding())
 dirname = os.path.dirname(os.path.abspath(__file))
 folder = u"textFiles"
 root = os.path.join(dirname, folder)
-for file in os.listdir(root):
+master = Tkinter.Tk()
+filenames = tkFileDialog.askopenfilename(multiple=True, initialdir=root, title="Select Files to generate", filetypes=(("txt files","*.txt"),))
+filenames = master.tk.splitlist(filenames)
+for file in filenames:
     try:
+        file = os.path.basename(file).decode("utf-8")
         if file.endswith(".txt"):
             print(u"Generating {0}".format(unicodedata.normalize("NFC", file)))
             inputText = ParseTextFile(root, file, configAll["groupConfigs"])
