@@ -61,7 +61,9 @@ Um die Elemente aus dem config-File lesen zu können muss dieses folgendem Aufba
 
 * Das config-File muss aus `einer Slide` bestehen.
 * Das Element welches den primären Text enthält muss den namen `"TextElement"` haben.
+* Die erste Zeile des Textes des primären TextElements muss mit `"This is the template Text"` beginnen.
 * Falls es ein Element für den sekundären Text geben soll, muss dieses den name `"CaptionTextElement"` haben.
+* Die erste Zeile des Textes des sekundären TextElements muss mit `"This is the caption template"` beginnen.
 * Falls es ein Element für den Hintergrund geben soll, muss dieses den namen `"BottomLineShapeElement"` haben.
 * Falls es ein zweites Element für den Hintergrund geben soll, muss dieses den namen `"TopLineShapeElement"` haben.
 * Falls aus dem Style nur einzeilige Slides erzeugt werden sollen, muss in den Notes `"Only one line"` stehen.

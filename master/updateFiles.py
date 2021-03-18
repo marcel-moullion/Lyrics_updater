@@ -66,7 +66,7 @@ def ParseConfigFiles(configAll):
             "RVTextElement[@displayName='TextElement']")
         rtfDataText = textElement.find("NSString[@rvXMLIvarName='RTFData']")
         textStyle = base64.standard_b64decode(
-            rtfDataText.text).split(b'strokec0 ')[0] + b'strokec0 '
+            rtfDataText.text).split(b'This is the template Text')[0]
         captionElement = displayElements.find(
             "RVTextElement[@displayName='CaptionTextElement']")
         captionStyle = ""
@@ -74,7 +74,7 @@ def ParseConfigFiles(configAll):
             rtfDataText = captionElement.find(
                 "NSString[@rvXMLIvarName='RTFData']")
             captionStyle = base64.standard_b64decode(
-                rtfDataText.text).split(b'strokec0 ')[0] + b'strokec0 '
+                rtfDataText.text).split(b'This is the caption template')[0]
         lowerShapeElement = displayElements.find(
             "RVShapeElement[@displayName='BottomLineShapeElement']")
         upperShapeElement = displayElements.find(
