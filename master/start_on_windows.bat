@@ -1,3 +1,3 @@
 @ECHO OFF
-C:\Python27\python updateFiles.py
+E:\Programme\Python\python.exe scripts\main.py
 PAUSE

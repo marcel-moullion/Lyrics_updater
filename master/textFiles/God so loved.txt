@@ -93,16 +93,15 @@ Arrangements
 Backing Track
 
 Verse 1
+Tag 1
 Chorus 1
 Verse 2
 Chorus 1
-Chorus 1
+Instrumental
 Bridge 1
 Bridge 1
+Chorus 1
 Bridge 1
-Chorus 1
-Chorus 1
-Tag 1
 
 24.11
 
