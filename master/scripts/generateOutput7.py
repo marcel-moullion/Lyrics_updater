@@ -201,7 +201,7 @@ def CreateOutput(config, groupConfig, name, language, caption, arrangements):
     presentation.uuid.string = str(uuid.uuid4())
     #update name
     songName = "{0}_{1}_{2}".format(
-        name, language["name"], config["styleName7"])
+        name.encode('ascii','ignore'), language["name"], config["styleName7"])
     presentation.name = songName
     uuids = {}
     # create groups

@@ -30,7 +30,7 @@ try:
             file = os.path.basename(file)
             if file.endswith(".txt"):
                 print(u'Generating "{0}"'.format(
-                    unicodedata.normalize("NFC", file)))
+                    unicodedata.normalize("NFC", file).encode('ascii','ignore')))
                 inputText = text.ParseTextFile(
                     root, file, configAll["groupConfigs"])
                 # loop over configs and create output
