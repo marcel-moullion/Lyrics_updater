@@ -4,10 +4,21 @@ import os
 import re
 import base64
 import sys
+import presentation_pb2
+import basicTypes_pb2
 
 
 def ParseConfigFiles(configAll):
-    # parse masterConfig
+    ParseMasterConfigPro6(configAll)
+    ParseMasterConfigPro7(configAll)
+    ParseConfigFilesPro6(configAll)
+    ParseConfigFilesPro7(configAll)
+    if (len(configAll["fileConfigs"]) == 0) and (len(configAll["fileConfigs7"]) == 0):
+        raise ValueError(
+            'Error: No configuration file was found in sub folders')
+
+
+def ParseMasterConfigPro6(configAll):
     print('Parsing "masterConfig_Groups.pro6"')
     configAll["groupConfigs"] = {}
     __file = __file__.decode(sys.getfilesystemencoding())
@@ -27,6 +38,25 @@ def ParseConfigFiles(configAll):
         groupOut["hotKey"] = group[0][0].get("hotKey")
         configAll["groupConfigs"][group.get("name")] = groupOut
 
+
+def ParseMasterConfigPro7(configAll):
+    print('Parsing "masterConfig_Groups.pro"')
+    __file = __file__.decode(sys.getfilesystemencoding())
+    dirname = os.path.dirname(os.path.abspath(__file))
+    folder = u"..\\masterConfig_Groups.pro"
+    root = os.path.join(dirname, folder)
+    presentation = presentation_pb2.Presentation()
+    f = open(root, "rb")
+    presentation.ParseFromString(f.read())
+    f.close()
+    #store all groups in masterconfig
+    configAll["groupConfigs7"] = {}
+    for groups in presentation.cue_groups:
+        groups.ClearField("cue_identifiers")
+        configAll["groupConfigs7"][groups.group.name] = groups
+
+
+def ParseConfigFilesPro6(configAll):
     # loop over all config files in the subfolders
     configAll["fileConfigs"] = []
 
@@ -101,6 +131,67 @@ def ParseConfigFiles(configAll):
         configDict["arrangementNSString"] = arrangementNSString
         # append current config to config list
         configAll["fileConfigs"].append(configDict)
-    if len(configAll["fileConfigs"]) == 0:
-        raise ValueError(
-            'Error: no configuration file was found in sub folder: {0}'.format(root))
+
+
+def ParseConfigFilesPro7(configAll):
+    # loop over all config files in the subfolders
+    configAll["fileConfigs7"] = []
+
+    __file = __file__.decode(sys.getfilesystemencoding())
+    dirname = os.path.dirname(os.path.abspath(__file))
+    folder = u"..\\..\\**\\config_*.pro"
+    root = os.path.join(dirname, folder)
+    for file in glob.glob(root):
+        print('Parsing "{0}"'.format(file))
+        configDict = {}
+        # save path
+        configDict["path7"] = os.path.dirname(os.path.abspath(file))
+        # save style name
+        configDict["styleName7"] = re.search('config_(.*).pro', file).group(1)
+        presentation = presentation_pb2.Presentation()
+        f = open(file, "rb")
+        presentation.ParseFromString(f.read())
+        f.close()
+        presentation.selected_arrangement.Clear()
+        presentation.ClearField("cue_groups")
+        presentation.ccli.Clear()
+        #check if single line and get notesRTF
+        if "Only one line" in presentation.cues[0].actions[0].slide.presentation.notes.rtf_data:
+            configDict["singleLine7"] = True
+            configDict["notesRTF7"] = presentation.cues[0].actions[0].slide.presentation.notes.rtf_data.split(
+                'Only one line')[0]
+        else:
+            configDict["singleLine7"] = False
+            configDict["notesRTF7"] = presentation.cues[0].actions[0].slide.presentation.notes.rtf_data.split(
+                'This is the template Text')[0]
+            configDict["notesSecondRTF7"] = presentation.cues[0].actions[0].slide.presentation.notes.rtf_data.split(
+                'With second line')[0].split('This is the template Text')[1]
+        presentation.cues[0].actions[0].slide.presentation.notes.rtf_data = ""
+        #get elements
+        for elements in presentation.cues[0].actions[0].slide.presentation.base_slide.elements:
+            if elements.element.name == "TextElement":
+                configDict["textElement7"] = elements
+                configDict["textStyle7"] = elements.element.text.rtf_data.split(
+                    'This is the template Text')[0]
+                if configDict["singleLine7"] == False:
+                    configDict["textStyleSecond7"] = elements.element.text.rtf_data.split(
+                        'With second line')[0].split('This is the template Text')[1]
+            elif elements.element.name == "CaptionTextElement":
+                configDict["captionElement7"] = elements
+                configDict["captionStyle7"] = elements.element.text.rtf_data.split(
+                    'This is the caption template')[0]
+                if configDict["singleLine7"] == False:
+                    configDict["captionStyleSecond7"] = elements.element.text.rtf_data.split(
+                        'and caption second line')[0].split('This is the caption template')[1]
+            elif elements.element.name == "BottomLineShapeElement":
+                configDict["lowerShapeElement7"] = elements
+            elif elements.element.name == "TopLineShapeElement":
+                configDict["upperShapeElement7"] = elements
+        presentation.cues[0].actions[0].slide.presentation.base_slide.ClearField(
+            "elements")
+        configDict["slide7"] = presentation.cues[0]
+        presentation.ClearField("arrangements")
+        presentation.ClearField("cues")
+        configDict["presentation7"] = presentation
+        # append current config to config list
+        configAll["fileConfigs7"].append(configDict)

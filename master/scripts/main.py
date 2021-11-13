@@ -3,6 +3,7 @@
 import parseConfigFiles as config
 import parseTextFiles as text
 import generateOutput as output
+import generateOutput7 as output7
 import sys
 import os
 import Tkinter
@@ -14,7 +15,7 @@ configAll = {}
 try:
     config.ParseConfigFiles(configAll)
     # loop over all files in master
-    __file = __file__.decode(sys.getfilesystemencoding()) 
+    __file = __file__.decode(sys.getfilesystemencoding())
     dirname = os.path.dirname(os.path.abspath(__file))
     folder = u"..\\textFiles"
     root = os.path.join(dirname, folder)
@@ -24,20 +25,25 @@ try:
     filenames = master.tk.splitlist(filenames)
     for file in filenames:
         try:
-            if not isinstance(file, unicode) :
+            if not isinstance(file, unicode):
                 file = unicode(file, "utf-8")
             file = os.path.basename(file)
             if file.endswith(".txt"):
-                print(u'Generating "{0}"'.format(unicodedata.normalize("NFC", file)))
+                print(u'Generating "{0}"'.format(
+                    unicodedata.normalize("NFC", file)))
                 inputText = text.ParseTextFile(
                     root, file, configAll["groupConfigs"])
                 # loop over configs and create output
                 for config in configAll["fileConfigs"]:
-                    output.CreateOutputs(config, configAll["groupConfigs"], inputText)
+                    output.CreateOutputs(
+                        config, configAll["groupConfigs"], inputText)
+                # loop over configs from pro7 and create output
+                for config in configAll["fileConfigs7"]:
+                    output7.CreateOutputs(
+                        config, configAll["groupConfigs7"], inputText)
         except ValueError as err:
             print(err)
     print("Generation Succesful. This window can be closed")
 except ValueError as err:
     print("Exception occured: check following text:")
     print(err)
-
