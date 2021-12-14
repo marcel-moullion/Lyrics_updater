@@ -46,13 +46,13 @@ Die Liebe bleibt
 Bridge 1
 
 Du zerreißt den dunklen Schleier
-Brichst die Ketten und Du setzt uns freii
+Brichst die Ketten und Du setzt uns frei
 
 Kämpfst für die verlornen Herzen
 Gabst Dich hin für alle Welt
 
 Du zerreißt den dunklen Schleier
-Brichst die Ketten und Du setzt uns freii
+Brichst die Ketten und Du setzt uns frei
 
 Kämpfst für die verlornen Herzen
 Gabst Dich hin
@@ -134,6 +134,7 @@ Arrangements
 
 Backing Track
 
+Instrumental
 Verse 1
 Prechorus 1
 Tag 1
@@ -147,6 +148,7 @@ Tag 1
 
 Remix
 
+Instrumental
 Verse 1
 Prechorus 1
 Tag 1
@@ -159,6 +161,7 @@ Tag 1
 
 Acoustic
 
+Instrumental
 Verse 1
 Prechorus 2
 Chorus 1

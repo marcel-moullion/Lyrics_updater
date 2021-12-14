@@ -138,6 +138,7 @@ Arrangements
 
 Backing Track
 
+Instrumental
 Verse 1
 Prechorus 1
 Verse 2
@@ -154,6 +155,7 @@ Bridge 2
 
 Short Version
 
+Instrumental
 Chorus 1
 Prechorus 1
 Prechorus 1

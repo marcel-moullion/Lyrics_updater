@@ -12,6 +12,10 @@ Tag 1
 
 Wir singen freue
 
+Tag 2
+
+Freue dich Welt
+
 Verse 1
 
 Freue dich Welt, dein König naht
@@ -94,6 +98,10 @@ Tag 1
 
 We will sing joy
 
+Tag 2
+
+Joy to the world
+
 Verse 1
 
 Joy to the world! The Lord is come; 
@@ -166,6 +174,7 @@ Arrangements
 
 Backing Track
 
+Instrumental
 Verse 1
 Tag 1
 Verse 2
@@ -173,4 +182,5 @@ Chorus 1
 Verse 3
 Chorus 1
 Chorus 2
+Tag 2
 

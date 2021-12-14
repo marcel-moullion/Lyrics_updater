@@ -158,6 +158,7 @@ Arrangements
 
 Backing Track
 
+Instrumental
 Verse 1
 Verse 2
 Chorus 1
@@ -171,6 +172,7 @@ Chorus 3
 
 Only Bridge
 
+Instrumental
 Bridge 1
 Bridge 1
 Bridge 1

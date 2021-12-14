@@ -15,6 +15,7 @@ Systemvariablen eingetragen sein.**
 Dieser Ordner enthält:
 
 * die Dateien zum Ausführen des Scripts (`"start_on_mac.command"/"start_on_windows.bat"`),
+  Um das script auszuführen muss einmalig über das Terminal "chmod a+x start_on_mac.command" ausgeführt werden
 * das Script zum Generieren der Songs (`"updateFiles.py"`),
 * die Konfiguration welche Gruppen verfügbar sind und welche Farbe/Shorcuts diese
 haben (`"masterConfig_Groups.pro6"`)

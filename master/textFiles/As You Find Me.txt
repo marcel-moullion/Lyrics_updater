@@ -210,6 +210,7 @@ Arrangements
 
 Backing Track
 
+Instrumental
 Verse 1
 Verse 2
 Prechorus 1
@@ -227,6 +228,7 @@ Tag 2
 
 Bridge/Chorus only
 
+Instrumental
 Prechorus 1
 Prechorus 1
 Prechorus 1

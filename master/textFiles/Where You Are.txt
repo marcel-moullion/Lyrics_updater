@@ -134,6 +134,7 @@ Arrangements
 
 Backing Track
 
+Instrumental
 Verse 1
 Prechorus 1
 Prechorus 2
@@ -149,6 +150,7 @@ Tag 1
 
 Remix
 
+Instrumental
 Verse 1
 Prechorus 1
 Prechorus 2
@@ -164,6 +166,7 @@ Tag 2
 
 Normal
 
+Instrumental
 Verse 1
 Prechorus 1
 Prechorus 2

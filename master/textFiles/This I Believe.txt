@@ -106,6 +106,7 @@ Arrangements
 
 Backing Track
 
+Instrumental
 Verse 1
 Chorus 1
 Verse 2
@@ -119,6 +120,7 @@ Tag 1
 
 only Bridge/Chorus
 
+Instrumental
 Chorus 1
 Bridge 1
 Chorus 2
