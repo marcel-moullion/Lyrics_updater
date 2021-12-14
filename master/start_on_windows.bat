@@ -1,3 +1,3 @@
 @ECHO OFF
-E:\Programme\Python\python.exe scripts\main.py
+python scripts\main.py
 PAUSE
