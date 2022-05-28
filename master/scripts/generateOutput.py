@@ -45,28 +45,6 @@ def ReplaceSpecialCharacters(text):
     return output
 
 
-def ReplaceSpecialCharactersForNotes(text):
-    output = copy.deepcopy(text)
-    for i in range(0, len(output)):
-        # Ä
-        output[i] = output[i].replace(u'\u00c4', u"\u00c3\u201e")
-        # Ö
-        output[i] = output[i].replace(u'\u00d6', u"\u00c3\u2013")
-        # Ü
-        output[i] = output[i].replace(u'\u00dc', u"\u00c3\u0153")
-        # ä
-        output[i] = output[i].replace(u'\u00e4', "ä")
-        # ö
-        output[i] = output[i].replace(u'\u00f6', "ö")
-        # ü
-        output[i] = output[i].replace(u'\u00fc', "ü")
-        # ß
-        output[i] = output[i].replace(u'\u00df', u"\u00c3\u0178")
-        # ’
-        output[i] = output[i].replace(u'\u2019', "'")
-    return output
-
-
 def CreateSlide(config, group, text, caption):
     slide = copy.deepcopy(config["slide"])
     # add uuid

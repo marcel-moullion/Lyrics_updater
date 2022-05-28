@@ -20,7 +20,6 @@ for file in filenames:
     try:
         if not isinstance(file, unicode):
             file = unicode(file, "utf-8")
-        file = os.path.basename(file)
         presentation = presentation_pb2.Presentation()
         f = open(file, "rb")
         presentation.ParseFromString(f.read())

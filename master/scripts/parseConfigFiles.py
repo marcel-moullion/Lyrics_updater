@@ -22,8 +22,8 @@ def ParseMasterConfigPro6(configAll):
     print('Parsing "masterConfig_Groups.pro6"')
     configAll["groupConfigs"] = {}
     __file = __file__.decode(sys.getfilesystemencoding())
-    dirname = os.path.dirname(os.path.abspath(__file))
-    folder = u"..\\masterConfig_Groups.pro6"
+    dirname = os.path.dirname(os.path.dirname(os.path.abspath(__file)))
+    folder = u"masterConfig_Groups.pro6"
     root = os.path.join(dirname, folder)
     try:
         tree = ET.parse(root)
@@ -42,8 +42,8 @@ def ParseMasterConfigPro6(configAll):
 def ParseMasterConfigPro7(configAll):
     print('Parsing "masterConfig_Groups.pro"')
     __file = __file__.decode(sys.getfilesystemencoding())
-    dirname = os.path.dirname(os.path.abspath(__file))
-    folder = u"..\\masterConfig_Groups.pro"
+    dirname = os.path.dirname(os.path.dirname(os.path.abspath(__file)))
+    folder = u"masterConfig_Groups.pro"
     root = os.path.join(dirname, folder)
     presentation = presentation_pb2.Presentation()
     f = open(root, "rb")
@@ -59,11 +59,12 @@ def ParseMasterConfigPro7(configAll):
 def ParseConfigFilesPro6(configAll):
     # loop over all config files in the subfolders
     configAll["fileConfigs"] = []
-
     __file = __file__.decode(sys.getfilesystemencoding())
-    dirname = os.path.dirname(os.path.abspath(__file))
-    folder = u"..\\..\\**\\config_*.pro6"
-    root = os.path.join(dirname, folder)
+    dirname = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file))))
+    folder = u"config_*.pro6"
+    root = os.path.join(dirname, u"**")
+    root = os.path.join(root, folder)
+    print(root)
     for file in glob.glob(root):
         print('Parsing "{0}"'.format(file))
         configDict = {}

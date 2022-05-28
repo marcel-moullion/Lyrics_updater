@@ -15,8 +15,8 @@ try:
     config.ParseConfigFiles(configAll)
     # loop over all files in master
     __file = __file__.decode(sys.getfilesystemencoding())
-    dirname = os.path.dirname(os.path.abspath(__file))
-    folder = u"..\\textFiles"
+    dirname = os.path.dirname(os.path.dirname(os.path.abspath(__file)))
+    folder = u"textFiles"
     root = os.path.join(dirname, folder)
     master = Tkinter.Tk()
     filenames = tkFileDialog.askopenfilename(
